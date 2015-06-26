@@ -16,9 +16,9 @@
 package com.netflix.turbine.discovery.eureka;
 
 import com.netflix.eureka2.interests.ChangeNotification;
-import com.netflix.eureka2.registry.InstanceInfo;
-import com.netflix.eureka2.registry.ServicePort;
-import com.netflix.eureka2.registry.NetworkAddress.ProtocolType;
+import com.netflix.eureka2.registry.instance.InstanceInfo;
+import com.netflix.eureka2.registry.instance.NetworkAddress;
+import com.netflix.eureka2.registry.instance.ServicePort;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +51,7 @@ public class EurekaInstance {
         
         String ipAddress = instanceInfo.getDataCenterInfo()
                 .getAddresses().stream()
-                .filter(na -> na.getProtocolType() == ProtocolType.IPv4)
+                .filter(na -> na.getProtocolType() == NetworkAddress.ProtocolType.IPv4)
                 .collect(Collectors.toList()).get(0).getIpAddress();
         HashSet<ServicePort> servicePorts = instanceInfo.getPorts();
         int port = instanceInfo.getPorts().iterator().next().getPort();

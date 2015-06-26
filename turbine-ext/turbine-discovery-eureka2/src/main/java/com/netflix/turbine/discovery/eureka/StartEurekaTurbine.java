@@ -15,8 +15,9 @@
  */
 package com.netflix.turbine.discovery.eureka;
 
-import com.netflix.eureka2.client.Eureka;
-import com.netflix.eureka2.client.EurekaClient;
+import com.netflix.eureka2.Server;
+import com.netflix.eureka2.client.EurekaInterestClient;
+import com.netflix.eureka2.client.Eurekas;
 import com.netflix.eureka2.client.resolver.ServerResolvers;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -98,7 +99,9 @@ public class StartEurekaTurbine {
         logger.info("Turbine => Eureka URL Template: " + template);
 
         try {
-            EurekaClient eurekaClient = Eureka.newClient(ServerResolvers.just(eurekaHostname, eurekaPort), null);
+            EurekaInterestClient eurekaClient = Eurekas.newInterestClientBuilder()
+                    .withServerResolver(ServerResolvers.from(new Server(eurekaHostname, eurekaPort)))
+                    .build();
             Turbine.startServerSentEventServer(port, EurekaStreamDiscovery.create(app, template, eurekaClient));
         } catch (Throwable e) {
             e.printStackTrace();

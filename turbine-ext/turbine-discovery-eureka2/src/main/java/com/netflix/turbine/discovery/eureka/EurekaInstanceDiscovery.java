@@ -15,11 +15,13 @@
  */
 package com.netflix.turbine.discovery.eureka;
 
-import com.netflix.eureka2.client.Eureka;
-import com.netflix.eureka2.client.EurekaClient;
+import com.netflix.eureka2.Server;
+import com.netflix.eureka2.client.EurekaInterestClient;
+import com.netflix.eureka2.client.Eurekas;
 import com.netflix.eureka2.client.resolver.ServerResolvers;
 import com.netflix.eureka2.interests.ChangeNotification;
-import com.netflix.eureka2.registry.InstanceInfo;
+import com.netflix.eureka2.interests.Interests;
+import com.netflix.eureka2.registry.instance.InstanceInfo;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
@@ -30,7 +32,7 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 
 /**
- * Class that encapsulates an {@link InstanceDicovery} implementation that uses Eureka (see https://github.com/Netflix/eureka)
+ * Class that encapsulates an {@link com.netflix.turbine.discovery.eureka.EurekaInstanceDiscovery} implementation that uses Eureka (see https://github.com/Netflix/eureka)
  * The plugin requires a list of applications configured. It then queries the set of instances for each application.
  * Instance information retrieved from Eureka must be translated to something that Turbine can understand i.e the
  * {@link EurekaInstance} class.
@@ -41,7 +43,7 @@ public class EurekaInstanceDiscovery {
 
     private static final Logger logger = LoggerFactory.getLogger(EurekaInstanceDiscovery.class);
 
-    private final EurekaClient eurekaClient;
+    private final EurekaInterestClient eurekaClient;
 
     public static void main(String[] args) {
         OptionParser optionParser = new OptionParser();
@@ -79,17 +81,20 @@ public class EurekaInstanceDiscovery {
             app = String.valueOf(options.valueOf("app"));
         }
 
-        EurekaClient eurekaClient = Eureka.newClient(ServerResolvers.just(eurekaHostname, eurekaPort), null);
+        EurekaInterestClient eurekaClient = Eurekas.newInterestClientBuilder()
+                .withServerResolver(ServerResolvers.from(new Server(eurekaHostname, eurekaPort)))
+                .build();
+
         new EurekaInstanceDiscovery(eurekaClient)
                 .getInstanceEvents(app).toBlocking().forEach(i -> System.out.println(i));
     }
 
-    public EurekaInstanceDiscovery(EurekaClient eurekaClient) {
+    public EurekaInstanceDiscovery(EurekaInterestClient eurekaClient) {
         this.eurekaClient = eurekaClient;
     }
 
     public Observable<EurekaInstance> getInstanceEvents(String appName) {
-        return eurekaClient.forApplication(appName)
+        return eurekaClient.forInterest(Interests.forApplications(appName))
                 .map(new Func1<ChangeNotification<InstanceInfo>, EurekaInstance>() {
                     @Override
                     public EurekaInstance call(ChangeNotification<InstanceInfo> notification) {

@@ -17,7 +17,7 @@ package com.netflix.turbine.discovery.eureka;
 
 import java.net.URI;
 
-import com.netflix.eureka2.client.EurekaClient;
+import com.netflix.eureka2.client.EurekaInterestClient;
 import com.netflix.turbine.discovery.StreamAction;
 import com.netflix.turbine.discovery.StreamDiscovery;
 
@@ -29,16 +29,16 @@ public class EurekaStreamDiscovery implements StreamDiscovery {
 
     private static final Logger logger = LoggerFactory.getLogger(EurekaStreamDiscovery.class);
 
-    public static EurekaStreamDiscovery create(String appName, String uriTemplate, EurekaClient eurekaClient) {
+    public static EurekaStreamDiscovery create(String appName, String uriTemplate, EurekaInterestClient eurekaClient) {
         return new EurekaStreamDiscovery(appName, uriTemplate, eurekaClient);
     }
 
     public final static String HOSTNAME = "{HOSTNAME}";
     private final String uriTemplate;
     private final String appName;
-    private final EurekaClient eurekaClient;
+    private final EurekaInterestClient eurekaClient;
 
-    private EurekaStreamDiscovery(String appName, String uriTemplate, EurekaClient eurekaClient) {
+    private EurekaStreamDiscovery(String appName, String uriTemplate, EurekaInterestClient eurekaClient) {
         this.appName = appName;
         this.uriTemplate = uriTemplate;
         this.eurekaClient = eurekaClient;
